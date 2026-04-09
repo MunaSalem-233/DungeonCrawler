@@ -1,7 +1,7 @@
 # DungeonCrawler
 
 ## Repository
-<Link to your project's public GitHub respository>
+https://github.com/MunaSalem-233/DungeonCrawler.git
 
 ## Description
 A 2d pixel dungeon crawler game that allows players to explore and fight a randomized dungeon. It will be turn-based and text-heavy with elements of dice rolling and equipment power-ups.

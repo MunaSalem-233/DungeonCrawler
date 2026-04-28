@@ -20,10 +20,10 @@ def main():
     font = pygame.font.SysFont(None, 36)
 
     # Find images and use pygame to load them into game.
-    player_img = pygame.transform.scale(pygame.image.load("player.png"), (tile, tile))
-    enemy_img = pygame.transform.scale(pygame.image.load("enemy.png"), (tile, tile))
-    treasure_img = pygame.transform.scale(pygame.image.load("treasure.png"), (tile, tile))
-    floor_img = pygame.transform.scale(pygame.image.load("floor.jpg"), (tile, tile))
+    player_img = pygame.image.load("player.png")
+    enemy_img = pygame.image.load("enemy.png")
+    treasure_img = pygame.image.load("treasure.png")
+    floor_img = pygame.image.load("floor.jpg")
 
     # Player will have a max hp and start off in a player position on the grid [0, 0].
     player_pos = [0, 0]
@@ -54,9 +54,18 @@ def main():
     def draw():
         screen.fill((0,0,0))
 
-        for y in range(size):
-            for x in range(size):
-                screen.blit(floor_img, (x*tile + x_offset, y*tile))
+        screen.blit(pygame.transform.scale(floor_img, (width, height)), (0, 0))
+
+        screen.blit(player_img) 
+                     
+
+        if player_pos in enemies:
+            screen.blit(pygame.transform.scale(enemy_img, ()),
+                        (width//2 - 150, height//2 - 150))
+        elif player_pos in treasures:
+            screen.blit(pygame.transform.sclae(treasure_img, ()),
+                        (width//2 - 100, height//2 - 100))
+
 
     # Combat function: Text based combat function. The only choices player has is attack or defend. Enemy and player has a random chance and random dmg output.
     #   Start combat system will randomize enemy stats
@@ -79,6 +88,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+        draw()
+        pygame.display.flip()
 
     # Respawn system for enemies and treasure? (maybe)
     # Lose condition if player health goes to 0, display "You died!" text.

@@ -46,6 +46,11 @@ def main():
     
     enemies, treasures = spawn()
 
+    def draw_bar(x, y, w, h, value, max_val):
+        ratio = value / max_val
+        pygame.draw.rect(screen, (255,0,0), (x,y,w,h))
+        pygame.draw.rect(screen, (0,255,0), (x,y,w*ratio,h))
+
     def draw():
         screen.fill((0,0,0))
 
@@ -65,6 +70,15 @@ def main():
     # Game loop using if else elif statements to keep the game going after combat is done.
     # Movement using arrow keys and if else elif statements. This will affect player position on the grid if not in combat.
     # Using up, down, and return keys during combat to select choices in combat.
+    clock = pygame.time.Clock()
+    running = True
+
+    while running:
+        clock.tick(10)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
     # Respawn system for enemies and treasure? (maybe)
     # Lose condition if player health goes to 0, display "You died!" text.

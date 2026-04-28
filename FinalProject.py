@@ -13,15 +13,45 @@ def main():
     grid_size = size * tile
     ui_height = height - grid_size
 
+    x_offset = (width - grid_size) // 2
+
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Dungeon Crawler")
-    font = pygame.font.SysFont("Ariel", 36)
+    font = pygame.font.SysFont(None, 36)
 
     # Find images and use pygame to load them into game.
-
-    # Map function: Will need to be a randomized grid with enemy and tresure spawns. 
+    player_img = pygame.transform.scale(pygame.image.load("player.png"), (tile, tile))
+    enemy_img = pygame.transform.scale(pygame.image.load("enemy.png"), (tile, tile))
+    treasure_img = pygame.transform.scale(pygame.image.load("treasure.png"), (tile, tile))
+    floor_img = pygame.transform.scale(pygame.image.load("floor.jpg"), (tile, tile))
 
     # Player will have a max hp and start off in a player position on the grid [0, 0].
+    player_pos = [0, 0]
+    player_hp = 100
+    player_max = 100
+    treasure = 0
+    kills = 0
+
+    # Map function: Will need to be a randomized grid with enemy and tresure spawns. 
+    def random_pos(exclude):
+        while True:
+            pos = [random.randint(0, size-1), random.randint(0, size-1)]
+            if pos not in exclude:
+                return pos
+            
+    def spawn():
+        enemies = [random_pos([player_pos]) for _ in range(5)]
+        treasures = [random_pos([player_pos] + enemies) for _ in range(3)]
+        return enemies, treasures
+    
+    enemies, treasures = spawn()
+
+    def draw():
+        screen.fill((0,0,0))
+
+        for y in range(size):
+            for x in range(size):
+                screen.blit(floor_img, (x*tile + x_offset, y*tile))
 
     # Combat function: Text based combat function. The only choices player has is attack or defend. Enemy and player has a random chance and random dmg output.
     #   Start combat system will randomize enemy stats
@@ -40,6 +70,8 @@ def main():
     # Lose condition if player health goes to 0, display "You died!" text.
 
     # Player "animation"? Player and enemy sprites flash if they take damage. Use blit and flash surface in images loaded in. 
+
+    pygame.quit()
 
 if __name__ == "__main__":
     main()

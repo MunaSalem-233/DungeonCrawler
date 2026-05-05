@@ -7,17 +7,12 @@ def main():
 
     # Create a screen size and display for game using pygame import.
     size = 5
-    tile = 160
     width = 1024
     height = 1024
-    grid_size = size * tile
-    ui_height = height - grid_size
-
-    x_offset = (width - grid_size) // 2
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Dungeon Crawler")
-    font = pygame.font.SysFont(None, 36)
+    clock = pygame.time.Clock()
 
     # Find images and use pygame to load them into game.
     player_img = pygame.image.load("player.png")
@@ -31,6 +26,7 @@ def main():
     player_max = 100
     treasure = 0
     kills = 0
+    flash_timer = 0
 
     # Map function: Will need to be a randomized grid with enemy and tresure spawns. 
     def random_pos(exclude):
@@ -46,11 +42,6 @@ def main():
     
     enemies, treasures = spawn()
 
-    def draw_bar(x, y, w, h, value, max_val):
-        ratio = value / max_val
-        pygame.draw.rect(screen, (255,0,0), (x,y,w,h))
-        pygame.draw.rect(screen, (0,255,0), (x,y,w*ratio,h))
-
     def draw():
         screen.fill((0,0,0))
 
@@ -65,6 +56,12 @@ def main():
         elif player_pos in treasures:
             screen.blit(pygame.transform.sclae(treasure_img, ()),
                         (width//2 - 100, height//2 - 100))
+            
+        if flash_timer > 0:
+            flash = pygame.Surface((width, height))
+            flash.fill((255, 255, 255))
+            flash.set_alpha(150)
+            screen.blit(flash, (0, 0))
 
 
     # Combat function: Text based combat function. The only choices player has is attack or defend. Enemy and player has a random chance and random dmg output.
@@ -79,7 +76,6 @@ def main():
     # Game loop using if else elif statements to keep the game going after combat is done.
     # Movement using arrow keys and if else elif statements. This will affect player position on the grid if not in combat.
     # Using up, down, and return keys during combat to select choices in combat.
-    clock = pygame.time.Clock()
     running = True
 
     while running:
@@ -88,6 +84,41 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            elif event.type == pygame.KEYDOWN:
+
+                moved = False
+
+                if event.key == pygame.K_UP and player_pos[0] > 0:
+                    player_pos[0] -= 1
+                    moved = True
+                elif event.key == pygame.K_DOWN and player_pos[0] < size-1:
+                    player_pos[0] += 1
+                    moved = True
+                elif event.key == pygame.K_LEFT and player_pos[1] > 0:
+                    player_pos[1] -= 1
+                    moved = True
+                elif event.key == pygame.K_RIGHT and player_pos[1] < size-1:
+                    player_pos[1] += 1
+                    moved = True
+
+                if moved:
+                    flash_timer = 3
+
+                    if player_pos in enemies:
+                        enemies.remove(player_pos)
+                        enemies.remove(player_pos)
+                        kills += 1
+                        print(f"Enemy defeated! ({kills}/10)")
+
+                    elif player_pos in treasures:
+                        treasures.remove(player_pos)
+                        treasure += 1
+                        print("Found treasure!")
+
+        if flash_timer > 0:
+            flash_timer -= 1
+
 
         draw()
         pygame.display.flip()

@@ -13,6 +13,7 @@ def main():
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Dungeon Crawler")
     clock = pygame.time.Clock()
+    font = pygame.font.SysFont(None, 36)
 
     # Find images and use pygame to load them into game.
     player_img = pygame.image.load("player.png")
@@ -26,7 +27,19 @@ def main():
     player_max = 100
     treasure = 0
     kills = 0
+
+    state = "explore"
+    message = "Explore the dungeon..."
+
+    options = ["Attack", "Defend"]
+    selected = 0
+
+    enemy_hp = 0
+    enemy_max = 0
+
     flash_timer = 0
+    bob_timer = 0
+    bob_offset = 0
 
     # Map function: Will need to be a randomized grid with enemy and tresure spawns. 
     def random_pos(exclude):
@@ -42,6 +55,48 @@ def main():
     
     enemies, treasures = spawn()
 
+    def start_combat():
+        nonlocal state
+        nonlocal enemy_hp
+        nonlocal enemy_max
+        nonlocal message
+
+        state = "combat"
+
+        enemy_max = random.randint(40, 70)
+        enemy_hp = enemy_max
+
+        message = "An enemy appears!"
+
+    def player_attack():
+        nonlocal enemy_hp
+        nonlocal message
+
+        hit_chance = min(0.7 + treasure * 0.05, 0.95)
+
+        if random.ransom() < hit_chance:
+            dmg = random.randint(10, 20)
+            enemy_hp -= dmg
+
+            message = f"You hit for {dmg}!"
+        else:
+            message = "You missed!"
+
+    def enemy_turn(defending):
+        nonlocal player_hp
+        nonlocal message
+
+        dodge = 0.2 + (0.3 if defending else 0)
+
+        if random.random() < dodge:
+            message = "You dodged!"
+            return
+        
+        dmg = random.randint(5, 15)
+        player_hp -= dmg
+
+        message = f"Enemy hits for {dmg}!"
+        
     def draw():
         screen.fill((0,0,0))
 

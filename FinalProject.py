@@ -96,16 +96,22 @@ def main():
         player_hp -= dmg
 
         message = f"Enemy hits for {dmg}!"
-        
+
+    def draw_bar(x, y, w, h, value, max_val):
+        ratio = value / max_val
+
+        pygame.draw.rect(screen, (120, 0, 0), (x, y, w, h))
+        pygame.draw.rect(screen, (0, 200, 0), (x, y, w * ratio, h))
+
     def draw():
         screen.fill((0,0,0))
 
         screen.blit(pygame.transform.scale(floor_img, (width, height)), (0, 0))
 
-        screen.blit(player_img) 
+        screen.blit(player_img + bob_offset) 
                      
 
-        if player_pos in enemies:
+        if state == "combat":
             screen.blit(pygame.transform.scale(enemy_img, ()),
                         (width//2 - 150, height//2 - 150))
         elif player_pos in treasures:
@@ -127,6 +133,72 @@ def main():
     # Win condition is killing 5 emenies. Add a "You won!" text.
 
     #A simple UI display showing player HP, Enemy HP, Messages, Kills.
+    pygame.draw.rect(
+        screen,
+        (20, 20, 20),
+        (0, height - 220, width, 220)
+    )
+
+    # Message UI
+    msg = font.render(message, True, (255, 255, 255))
+    screen.blit(msg, (40, height - 190))
+    
+    # HP bar UI
+    draw_bar(40, height - 140, 300, 25, player_hp, player_max)
+
+    player_text = font.render(
+        f"Player HP: {player_hp}/{player_max}",
+        True,
+        (255, 255, 255)
+    )
+    screen.blit(player_text, (40, height - 170))
+
+    if state == "combat":
+        draw_bar(
+            width - 340,
+            height - 140,
+            300,
+            25,
+            enemy_hp,
+            enemy_max
+        )
+
+        enemy_text = font.render(
+            f"Enemy HP: {enemy_hp}/{enemy_max}",
+            True,
+            (255, 255, 255)
+        )
+
+    screen.blit(enemy_text, (width - 340, height - 170))
+
+    # Combat Options
+    if state == "combat":
+        for i, opt in enumerate(options):
+            color = (
+                (255, 255, 0)
+                if i == selected
+                else (200, 200, 200)
+            )
+
+            text = font.render(opt, True, color)
+
+            screen.blit(
+                text,
+                (60, height - 90 + i * 40)
+            )
+
+    # Stats
+    stats = font.render(
+        f"Treasures: {treasure}  Kills: {kills}/10",
+        True,
+        (255, 255, 255)
+    )
+
+    screen.blit(stats, (500, height - 90))
+
+    pygame.display.flip()
+
+
 
     # Game loop using if else elif statements to keep the game going after combat is done.
     # Movement using arrow keys and if else elif statements. This will affect player position on the grid if not in combat.
@@ -134,7 +206,7 @@ def main():
     running = True
 
     while running:
-        clock.tick(10)
+        clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -142,35 +214,65 @@ def main():
 
             elif event.type == pygame.KEYDOWN:
 
-                moved = False
+                if state == "explore":
+                    moved = False
 
-                if event.key == pygame.K_UP and player_pos[0] > 0:
-                    player_pos[0] -= 1
-                    moved = True
-                elif event.key == pygame.K_DOWN and player_pos[0] < size-1:
-                    player_pos[0] += 1
-                    moved = True
-                elif event.key == pygame.K_LEFT and player_pos[1] > 0:
-                    player_pos[1] -= 1
-                    moved = True
-                elif event.key == pygame.K_RIGHT and player_pos[1] < size-1:
-                    player_pos[1] += 1
-                    moved = True
+                    if event.key == pygame.K_UP and player_pos[0] > 0:
+                        player_pos[0] -= 1
+                        moved = True
+                    elif event.key == pygame.K_DOWN and player_pos[0] < size-1:
+                        player_pos[0] += 1
+                        moved = True
+                    elif event.key == pygame.K_LEFT and player_pos[1] > 0:
+                        player_pos[1] -= 1
+                        moved = True
+                    elif event.key == pygame.K_RIGHT and player_pos[1] < size-1:
+                        player_pos[1] += 1
+                        moved = True
 
-                if moved:
-                    flash_timer = 3
+                    if moved:
+                        flash_timer = 4
+                        bob_timer = 12
 
-                    if player_pos in enemies:
-                        enemies.remove(player_pos)
-                        enemies.remove(player_pos)
-                        kills += 1
-                        print(f"Enemy defeated! ({kills}/10)")
+                        if player_pos in enemies:
+                            enemies.remove(player_pos)
+                            enemies.remove(player_pos)
+                            start_combat()
 
-                    elif player_pos in treasures:
-                        treasures.remove(player_pos)
-                        treasure += 1
-                        print("Found treasure!")
+                        elif player_pos in treasures:
+                            treasures.remove(player_pos)
+                            treasure += 1
+                            message = ("Found treasure!")
 
+            elif state == "combat":
+
+                if event.key == pygame.K_UP:
+                    selected = (selected -1) % len(options)
+
+                elif event.key == pygame.K_DOWN:
+                    selected = (selected + 1) % len(options)
+
+                elif event.key == pygame.K_RETURN:
+
+                    if options[selected] == "Attack":
+
+                        player_attack()
+
+                        if enemy_hp <= 0:
+                            kills += 1
+
+                            message = "Enemy defeated!"
+                            state = "explore"
+
+                            if kills >= 10:
+                                message = "You beat the dungeon!"
+                                running = False
+
+                        else:
+                            enemy_turn(False)
+
+        
+        # Animation
         if flash_timer > 0:
             flash_timer -= 1
 

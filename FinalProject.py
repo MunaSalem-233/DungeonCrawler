@@ -75,7 +75,7 @@ def main():
 
         hit_chance = min(0.7 + treasure * 0.05, 0.95)
 
-        if random.ransom() < hit_chance:
+        if random.random() < hit_chance:
             dmg = random.randint(10, 20)
             enemy_hp -= dmg
 
@@ -110,15 +110,22 @@ def main():
         screen.blit(pygame.transform.scale(floor_img, (width, height)), (0, 0))
 
         if state != "dead":
-            screen.blit(player_img + bob_offset) 
+            screen.blit(
+                player_img,
+                (
+                    width // 2 - player_img.get_width() // 2,
+                    height // 2 - player_img.get_height() // 2 + bob_offset
+                )
+            )
+
                      
 
         if state == "combat":
-            screen.blit(pygame.transform.scale(enemy_img, ()),
-                        (width//2 - 150, height//2 - 150))
+            screen.blit(enemy_img, ()),
+            (width//2 - 150, height//2 - 150)
         elif player_pos in treasures:
-            screen.blit(pygame.transform.scale(treasure_img, ()),
-                        (width//2 - 100, height//2 - 100))
+            screen.blit(treasure_img, ()),
+            (width//2 - 100, height//2 - 100)
 
             
         if flash_timer > 0:
@@ -136,107 +143,147 @@ def main():
     # Win condition is killing 5 emenies. Add a "You won!" text.
 
     #A simple UI display showing player HP, Enemy HP, Messages, Kills.
-    pygame.draw.rect(
-        screen,
-        (20, 20, 20),
-        (0, height - 220, width, 220)
-    )
-
-    # Message UI
-    msg = font.render(message, True, (255, 255, 255))
-    screen.blit(msg, (40, height - 190))
-    
-    # HP bar UI
-    draw_bar(40, height - 140, 300, 25, player_hp, player_max)
-
-    player_text = font.render(
-        f"Player HP: {player_hp}/{player_max}",
-        True,
-        (255, 255, 255)
-    )
-    screen.blit(player_text, (40, height - 170))
-
-    if state == "combat":
-        draw_bar(
-            width - 340,
-            height - 140,
-            300,
-            25,
-            enemy_hp,
-            enemy_max
+        pygame.draw.rect(
+            screen,
+            (20, 20, 20),
+            (0, height - 220, width, 220)
         )
 
-        enemy_text = font.render(
-            f"Enemy HP: {enemy_hp}/{enemy_max}",
+        # Message UI
+        msg = font.render(message, True, (255, 255, 255))
+        screen.blit(msg, (40, height - 190))
+        
+        # HP bar UI
+        draw_bar(40, height - 140, 300, 25, player_hp, player_max)
+
+        player_text = font.render(
+            f"Player HP: {player_hp}/{player_max}",
+            True,
+            (255, 255, 255)
+        )
+        screen.blit(player_text, (40, height - 170))
+
+        if state == "combat":
+            draw_bar(
+                width - 340,
+                height - 140,
+                300,
+                25,
+                enemy_hp,
+                enemy_max
+            )
+
+            enemy_text = font.render(
+                f"Enemy HP: {enemy_hp}/{enemy_max}",
+                True,
+                (255, 255, 255)
+            )
+
+            screen.blit(enemy_text, (width - 340, height - 170))
+
+        # Combat Options
+        if state == "combat":
+            for i, opt in enumerate(options):
+                color = (
+                    (255, 255, 0)
+                    if i == selected
+                    else (200, 200, 200)
+                )
+
+                text = font.render(opt, True, color)
+
+                screen.blit(
+                    text,
+                    (60, height - 90 + i * 40)
+                )
+
+        # Stats
+        stats = font.render(
+            f"Treasures: {treasure}  Kills: {kills}/10",
             True,
             (255, 255, 255)
         )
 
-    screen.blit(enemy_text, (width - 340, height - 170))
+        screen.blit(stats, (500, height - 90))
 
-    # Combat Options
-    if state == "combat":
-        for i, opt in enumerate(options):
-            color = (
-                (255, 255, 0)
-                if i == selected
-                else (200, 200, 200)
+        pygame.display.flip()
+
+        # Dead screen
+        if state == "dead":
+
+            overlay = pygame.Surface((width, height))
+            overlay.set_alpha(180)
+            overlay.fill((0, 0, 0))
+
+            screen.blit(overlay, (0, 0))
+
+            dead_text = big_font.render(
+                "YOU DIED...",
+                True,
+                (255, 0, 0)
             )
-
-            text = font.render(opt, True, color)
 
             screen.blit(
-                text,
-                (60, height - 90 + i * 40)
+                dead_text,
+                (
+                    width // 2 - dead_text.get_width() // 2,
+                    height // 2 - 100
+                )
             )
 
-    # Stats
-    stats = font.render(
-        f"Treasures: {treasure}  Kills: {kills}/10",
-        True,
-        (255, 255, 255)
-    )
-
-    screen.blit(stats, (500, height - 90))
-
-    pygame.display.flip()
-
-    # Dead screen
-    if state == "dead":
-
-        overlay = pygame.Surface((width, height))
-        overlay.set_alpha(180)
-        overlay.fill((0, 0, 0))
-
-        screen.blit(overlay, (0, 0))
-
-        dead_text = big_font.render(
-            "YOU DIED...",
-            True,
-            (255, 0, 0)
-        )
-
-        screen.blit(
-            dead_text,
-            (
-                width // 2 - dead_text.get_width() // 2,
-                height // 2 - 100
+            restart_text = font.render(
+                "Pres ESC to quit",
+                True,
+                (255, 255, 255)
             )
-        )
 
-        restart_text = font.render(
-            "Pres ESC to quit",
-            True,
-            (255, 255, 255)
-        )
-
-        screen.blit(
-            restart_text,
-            (
-                width // 2 - restart_text.get width() // 2,
-                height // 2
+            screen.blit(
+                restart_text,
+                (
+                    width // 2 - restart_text.get_width() // 2,
+                    height // 2
+                )
             )
-        )
+        
+        # Win Screen
+        if state == "win":
+
+            overlay = pygame.Surface((width, height))
+            overlay.set_alpha(180)
+            overlay.fill((0, 0, 0))
+
+            screen.blit(overlay, (0, 0))
+
+            win_text = big_font.render(
+                "You beat the dungeon!",
+                True,
+                (255, 0, 0)
+            )
+
+            screen.blit(
+                win_text,
+                (
+                    width // 2 - win_text.get_width() // 2,
+                    height // 2 - 100
+                )
+            )
+
+            quit_text = font.render(
+                "Press ESC to quit",
+                True,
+                (255, 255, 255)
+            )
+
+            screen.blit(
+                quit_text,
+                (
+                    width // 2 - quit_text.get_width() // 2,
+                    height // 2
+                )
+            )
+
+        pygame.display.flip()
+
 
 
     # Game loop using if else elif statements to keep the game going after combat is done.
@@ -275,7 +322,6 @@ def main():
 
                         if player_pos in enemies:
                             enemies.remove(player_pos)
-                            enemies.remove(player_pos)
                             start_combat()
 
                         elif player_pos in treasures:
@@ -283,41 +329,41 @@ def main():
                             treasure += 1
                             message = ("Found treasure!")
 
-            elif state == "combat":
+                elif state == "combat":
 
-                if event.key == pygame.K_UP:
-                    selected = (selected -1) % len(options)
+                    if event.key == pygame.K_UP:
+                        selected = (selected -1) % len(options)
 
-                elif event.key == pygame.K_DOWN:
-                    selected = (selected + 1) % len(options)
+                    elif event.key == pygame.K_DOWN:
+                        selected = (selected + 1) % len(options)
 
-                elif event.key == pygame.K_RETURN:
+                    elif event.key == pygame.K_RETURN:
 
-                    if options[selected] == "Attack":
+                        if options[selected] == "Attack":
 
-                        player_attack()
+                            player_attack()
 
-                        if enemy_hp <= 0:
-                            kills += 1
+                            if enemy_hp <= 0:
+                                kills += 1
 
-                            message = "Enemy defeated!"
-                            state = "explore"
+                                message = "Enemy defeated!"
+                                state = "explore"
 
-                            if kills >= 10:
-                                message = "You beat the dungeon!"
+                                if kills >= 10:
+                                    message = "You beat the dungeon!"
+                                    running = False
+
+                            else:
+                                enemy_turn(False)
+
+                        elif options[selected] == "Defend":
+
+                            message = "You brace for impact!"
+                            enemy_turn(True)
+
+                            if player_hp <= 0:
+                                message = "You have perished :("
                                 running = False
-
-                        else:
-                            enemy_turn(False)
-
-                    elif options[selected] == "Defend":
-
-                        message = "You brace for impact!"
-                        enemy_turn(True)
-
-                        if player_hp <= 0:
-                            message = "You have perished :("
-                            running = False
         
         # Animation
         if flash_timer > 0:

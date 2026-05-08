@@ -14,6 +14,7 @@ def main():
     pygame.display.set_caption("Dungeon Crawler")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 36)
+    big_font = pygame.font.SysFont(None, 72)
 
     # Find images and use pygame to load them into game.
     player_img = pygame.image.load("player.png")
@@ -108,15 +109,17 @@ def main():
 
         screen.blit(pygame.transform.scale(floor_img, (width, height)), (0, 0))
 
-        screen.blit(player_img + bob_offset) 
+        if state != "dead":
+            screen.blit(player_img + bob_offset) 
                      
 
         if state == "combat":
             screen.blit(pygame.transform.scale(enemy_img, ()),
                         (width//2 - 150, height//2 - 150))
         elif player_pos in treasures:
-            screen.blit(pygame.transform.sclae(treasure_img, ()),
+            screen.blit(pygame.transform.scale(treasure_img, ()),
                         (width//2 - 100, height//2 - 100))
+
             
         if flash_timer > 0:
             flash = pygame.Surface((width, height))
@@ -198,6 +201,42 @@ def main():
 
     pygame.display.flip()
 
+    # Dead screen
+    if state == "dead":
+
+        overlay = pygame.Surface((width, height))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+
+        screen.blit(overlay, (0, 0))
+
+        dead_text = big_font.render(
+            "YOU DIED...",
+            True,
+            (255, 0, 0)
+        )
+
+        screen.blit(
+            dead_text,
+            (
+                width // 2 - dead_text.get_width() // 2,
+                height // 2 - 100
+            )
+        )
+
+        restart_text = font.render(
+            "Pres ESC to quit",
+            True,
+            (255, 255, 255)
+        )
+
+        screen.blit(
+            restart_text,
+            (
+                width // 2 - restart_text.get width() // 2,
+                height // 2
+            )
+        )
 
 
     # Game loop using if else elif statements to keep the game going after combat is done.
@@ -271,10 +310,29 @@ def main():
                         else:
                             enemy_turn(False)
 
+                    elif options[selected] == "Defend":
+
+                        message = "You brace for impact!"
+                        enemy_turn(True)
+
+                        if player_hp <= 0:
+                            message = "You have perished :("
+                            running = False
         
         # Animation
         if flash_timer > 0:
             flash_timer -= 1
+        if bob_timer > 0:
+            bob_timer -= 1
+
+            bob_offset = (
+                4
+                if bob_timer % 2 == 0
+                else -4
+            )
+
+        else:
+            bob_offset = 0
 
 
         draw()

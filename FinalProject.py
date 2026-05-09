@@ -23,7 +23,7 @@ def main():
     floor_img = pygame.image.load("floor.jpg")
 
     # Player will have a max hp and start off in a player position on the grid [0, 0].
-    player_pos = [0, 0]
+    player_pos = [2, 2]
     player_hp = 100
     player_max = 100
     treasure = 0
@@ -78,6 +78,7 @@ def main():
         if random.random() < hit_chance:
             dmg = random.randint(10, 20)
             enemy_hp -= dmg
+            enemy_hp = max(enemy_hp, 0)
 
             message = f"You hit for {dmg}!"
         else:
@@ -95,6 +96,7 @@ def main():
         
         dmg = random.randint(5, 15)
         player_hp -= dmg
+        player_hp = max(player_hp, 0)
 
         message = f"Enemy hits for {dmg}!"
 
@@ -103,6 +105,7 @@ def main():
 
         pygame.draw.rect(screen, (120, 0, 0), (x, y, w, h))
         pygame.draw.rect(screen, (0, 200, 0), (x, y, w * ratio, h))
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
 
     def draw():
         screen.fill((0,0,0))
@@ -121,11 +124,9 @@ def main():
                      
 
         if state == "combat":
-            screen.blit(enemy_img, ()),
-            (width//2 - 150, height//2 - 150)
+            screen.blit(enemy_img,(width//2 - 150, height//2 - 150))
         elif player_pos in treasures:
-            screen.blit(treasure_img, ()),
-            (width//2 - 100, height//2 - 100)
+            screen.blit(treasure_img, (width//2 - 100, height//2 - 100))
 
             
         if flash_timer > 0:
@@ -206,8 +207,6 @@ def main():
 
         screen.blit(stats, (500, height - 90))
 
-        pygame.display.flip()
-
         # Dead screen
         if state == "dead":
 
@@ -218,7 +217,7 @@ def main():
             screen.blit(overlay, (0, 0))
 
             dead_text = big_font.render(
-                "YOU DIED...",
+                "You have perished :(",
                 True,
                 (255, 0, 0)
             )
@@ -299,8 +298,12 @@ def main():
                 running = False
 
             elif event.type == pygame.KEYDOWN:
+                if state in ["dead", 'win']:
 
-                if state == "explore":
+                    if event.key  == pygame.K_ESCAPE:
+                        running = False
+
+                elif state == "explore":
                     moved = False
 
                     if event.key == pygame.K_UP and player_pos[0] > 0:
@@ -361,9 +364,6 @@ def main():
                             message = "You brace for impact!"
                             enemy_turn(True)
 
-                            if player_hp <= 0:
-                                message = "You have perished :("
-                                running = False
         
         # Animation
         if flash_timer > 0:
@@ -379,6 +379,11 @@ def main():
 
         else:
             bob_offset = 0
+
+        if player_hp <= 0:
+            player_hp = 0
+            state = "dead"
+            message = "You have perished :("
 
 
         draw()

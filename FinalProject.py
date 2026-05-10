@@ -41,6 +41,7 @@ def main():
     flash_timer = 0
     bob_timer = 0
     bob_offset = 0
+    treasure_timer = 0
 
     # Map function: Will need to be a randomized grid with enemy and tresure spawns. 
     def random_pos(exclude):
@@ -321,7 +322,7 @@ def main():
 
                     if moved:
                         flash_timer = 4
-                        bob_timer = 12
+                        bob_timer = 24
 
                         if player_pos in enemies:
                             enemies.remove(player_pos)
@@ -330,7 +331,15 @@ def main():
                         elif player_pos in treasures:
                             treasures.remove(player_pos)
                             treasure += 1
-                            message = ("Found treasure!")
+                            treasure_timer = 30
+                            if random.random() < 0.6:
+                                heal = random.randint(10, 25)
+                                player_hp += heal
+                                player_hp = min(player_hp, player_max)
+
+                                message = f"Found treasure! Healed for {heal} HP."
+                            else:
+                                message = ("Found treasure!")
 
                 elif state == "combat":
 
@@ -371,14 +380,20 @@ def main():
         if bob_timer > 0:
             bob_timer -= 1
 
-            bob_offset = (
-                4
-                if bob_timer % 2 == 0
-                else -4
-            )
+            if bob_timer > 18:
+                bob_offset = -3
+            elif bob_timer > 12:
+                bob_offset = 0
+            elif bob_timer > 6:
+                bob_offset = 3
+            else:
+                bob_offset = 0
 
         else:
             bob_offset = 0
+
+        if treasure_timer > 0:
+            treasure_timer -= 1
 
         if player_hp <= 0:
             player_hp = 0

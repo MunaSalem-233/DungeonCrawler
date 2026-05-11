@@ -125,15 +125,27 @@ def main():
                      
 
         if state == "combat":
-            screen.blit(enemy_img,(width//2 - 150, height//2 - 150))
-        elif player_pos in treasures:
-            screen.blit(treasure_img, (width//2 - 100, height//2 - 100))
+            screen.blit(
+                enemy_img,
+                (
+                    width // 2 - enemy_img.get_width() // 2,
+                    height // 2 - enemy_img.get_height() // 2
+                )
+            )
+        elif treasure_timer > 0:
+            screen.blit(
+                treasure_img,
+                (
+                    width // 2 - enemy_img.get_width() // 2,
+                    height // 2 - enemy_img.get_height() // 2
+                )
+            )
 
             
         if flash_timer > 0:
             flash = pygame.Surface((width, height))
             flash.fill((255, 255, 255))
-            flash.set_alpha(150)
+            flash.set_alpha(120)
             screen.blit(flash, (0, 0))
 
 
@@ -145,11 +157,11 @@ def main():
     # Win condition is killing 5 emenies. Add a "You won!" text.
 
     #A simple UI display showing player HP, Enemy HP, Messages, Kills.
-        pygame.draw.rect(
-            screen,
-            (20, 20, 20),
-            (0, height - 220, width, 220)
-        )
+        ui_panel = pygame.Surface((width, 220))
+        ui_panel.set_alpha(160)
+        ui_panel.fill((20, 20, 20))
+
+        screen.blit(ui_panel, (0, height - 220))
 
         # Message UI
         msg = font.render(message, True, (255, 255, 255))
@@ -201,7 +213,7 @@ def main():
 
         # Stats
         stats = font.render(
-            f"Treasures: {treasure}  Kills: {kills}/10",
+            f"Treasures: {treasure}  Kills: {kills}/5",
             True,
             (255, 255, 255)
         )
@@ -307,22 +319,35 @@ def main():
                 elif state == "explore":
                     moved = False
 
-                    if event.key == pygame.K_UP and player_pos[0] > 0:
-                        player_pos[0] -= 1
-                        moved = True
-                    elif event.key == pygame.K_DOWN and player_pos[0] < size-1:
-                        player_pos[0] += 1
-                        moved = True
-                    elif event.key == pygame.K_LEFT and player_pos[1] > 0:
-                        player_pos[1] -= 1
-                        moved = True
-                    elif event.key == pygame.K_RIGHT and player_pos[1] < size-1:
-                        player_pos[1] += 1
-                        moved = True
+                    if event.key == pygame.K_UP:
+                        if player_pos[0] > 0:
+                            player_pos[0] -= 1
+                            moved = True
+                        else:
+                            message = "Cannot go any further!"
+                    elif event.key == pygame.K_DOWN:
+                        if player_pos[0] < size-1:
+                            player_pos[0] += 1
+                            moved = True
+                        else:
+                            message = "Cannot go any further!"
+                    elif event.key == pygame.K_LEFT:
+                        if player_pos[1] > 0:
+                            player_pos[1] -= 1
+                            moved = True
+                        else:
+                            message = "Cannot go any further!"
+                    elif event.key == pygame.K_RIGHT:
+                        if player_pos[1] < size-1:
+                            player_pos[1] += 1
+                            moved = True
+                        else:
+                            message = "Cannot go any further!"
 
                     if moved:
                         flash_timer = 4
                         bob_timer = 24
+                        message = "Explore the dungeon..."
 
                         if player_pos in enemies:
                             enemies.remove(player_pos)
@@ -332,8 +357,8 @@ def main():
                             treasures.remove(player_pos)
                             treasure += 1
                             treasure_timer = 30
-                            if random.random() < 0.6:
-                                heal = random.randint(10, 25)
+                            if random.random() < 0.85:
+                                heal = random.randint(15, 35)
                                 player_hp += heal
                                 player_hp = min(player_hp, player_max)
 
@@ -361,7 +386,7 @@ def main():
                                 message = "Enemy defeated!"
                                 state = "explore"
 
-                                if kills >= 10:
+                                if kills >= 5:
                                     message = "You beat the dungeon!"
                                     running = False
 
